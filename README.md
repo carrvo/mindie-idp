@@ -26,6 +26,10 @@ This will setup the following endpoints on your Apache server:
 - https://example.com/selfauth/index
 - https://example.com/selfauth/token
 
+### Security
+
+You may want to add additional `Require` statements to restrict `/selfauth/setup` from allowing anyone on the internet (or access to your network) from creating an account!
+
 ## Usage
 
 Use the https://example.com/selfauth/setup to add users.
