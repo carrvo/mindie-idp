@@ -1,4 +1,5 @@
 <?php
+header('Content-type: application/json');
 $issuer = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'];
 $meta = [
 	"issuer" => $issuer,
