@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
-define('MINTOKEN_SQLITE_PATH', '/var/lib/php-mintoken/tokens.sqlite3');
+$sqlite_path = getenv('MINTOKEN_SQLITE_PATH');
+if (empty($sqlite_path)) {
+    $sqlite_path = '/var/lib/php-mintoken/tokens.sqlite3';
+}
+define('MINTOKEN_SQLITE_PATH', $sqlite_path);
 define('MINTOKEN_CURL_TIMEOUT', 4);
 define('MINTOKEN_REVOKE_AFTER', '7 days');
 
