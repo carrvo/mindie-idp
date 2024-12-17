@@ -23,6 +23,7 @@ License: [MIT](MIT-LICENSE.md)
 
 - [support discovery](https://github.com/Inklings-io/selfauth/pull/55)
 - [multi-user support](https://github.com/Inklings-io/selfauth/pull/57)
+- [client discovery](https://github.com/Inklings-io/selfauth/pull/59)
 
 # Selfauth
 
