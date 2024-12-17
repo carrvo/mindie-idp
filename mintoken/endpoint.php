@@ -1,14 +1,9 @@
 <?php
-
 declare(strict_types=1);
 
-$sqlite_path = getenv('MINTOKEN_SQLITE_PATH');
-if (empty($sqlite_path)) {
-    $sqlite_path = '/var/lib/php-mintoken/tokens.sqlite3';
-}
-define('MINTOKEN_SQLITE_PATH', $sqlite_path);
-define('MINTOKEN_CURL_TIMEOUT', 4);
-define('MINTOKEN_REVOKE_AFTER', '7 days');
+define('MINTOKEN_SQLITE_PATH', getenv('MINTOKEN_SQLITE_PATH'));
+define('MINTOKEN_CURL_TIMEOUT', (int)getenv('MINTOKEN_CURL_TIMEOUT'));
+define('MINTOKEN_REVOKE_AFTER', getenv('MINTOKEN_REVOKE_AFTER'));
 
 if (!file_exists(MINTOKEN_SQLITE_PATH)) {
     header('HTTP/1.1 500 Internal Server Error');
