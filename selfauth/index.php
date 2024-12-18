@@ -153,7 +153,7 @@ function load_user_config($configdir, $user_uri_encoded_filename): void {
     } else {
         error_page(
             'Configuration Error',
-            'Endpoint not yet configured, visit <a href="setup.php">setup.php</a> for instructions on how to set it up.'
+            'Endpoint not yet configured, visit <a href="setup">setup</a> for instructions on how to set it up.'
         );
     }
 
@@ -164,7 +164,7 @@ function load_user_config($configdir, $user_uri_encoded_filename): void {
     ) {
         error_page(
             'Configuration Error',
-            'Endpoint not configured correctly, visit <a href="setup.php">setup.php</a> for instructions on how to set it up.'
+            'Endpoint not configured correctly, visit <a href="setup">setup</a> for instructions on how to set it up.'
         );
     }
 }
