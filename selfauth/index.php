@@ -425,6 +425,14 @@ padding:20px;
 .yellow{background-color:#FFC}
 
         </style>
+        <?php if (strcmp(getenv('SELFAUTH_ANONYMOUS_USER'), USER_URL) === 0) : ?>
+        <script>
+        document.addEventListener("DOMContentLoaded", (event) => {
+            document.getElementById("password").value = "<?php echo getenv('SELFAUTH_ANONYMOUS_PASS') ?>";
+            document.getElementsByClassName("submit")[0].click();
+        });
+        </script>
+        <?php endif; ?>
     </head>
     <body>
         <form method="POST" action="">

@@ -30,6 +30,21 @@ This will setup the following endpoints on your Apache server:
 
 You may want to add additional `Require` statements to restrict `/selfauth/setup` from allowing anyone on the internet (or access to your network) from creating an account!
 
+### Anonymous User
+
+If you would like to create an anonymous user then follow these steps:
+1. create a user profile, e.g. https://example.com/user/anonymous (see [MIndie-Profile](https://github.com/carrvo/mindie-profile) for one way of how to do this)
+1. configure the user through `/selfauth/setup`
+1. configure Apache HTTPd with
+    ```
+    <Location /selfauth/>
+        SetEnv SELFAUTH_ANONYMOUS_USER https://example.com/user/anonymous
+        # optionally if a password was set
+        # WARNING: this will be visible to users and is completely insecure!
+        SetEnv SELFAUTH_ANONYMOUS_PASS example
+    </Location>
+    ```
+
 ## Usage
 
 Use the https://example.com/selfauth/setup to add users.
