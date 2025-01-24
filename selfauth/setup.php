@@ -95,7 +95,7 @@ if ($configured) : ?>
     <?php if (isset($_POST['username'])) : ?>
     <div>
     <?php
-    $app_url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . str_replace('setup.php', '', $_SERVER['REQUEST_URI']);
+    $app_url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . str_replace('setup', '', $_SERVER['REQUEST_URI']);
 
     $user = $_POST['username'];
 
