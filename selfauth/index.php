@@ -440,13 +440,23 @@ padding:20px;
             <div>You are attempting to login with client <pre><?php echo htmlspecialchars($client_id); ?></pre></div>
             <?php if (isset($client_meta)) : ?>
             <div class="client-title">
+                <?php if (isset($client_meta['client_logo'])) : ?>
                 <img src="<?php echo htmlspecialchars($client_meta['client_logo']) ?>" alt="[logo]" />
+                <?php endif; ?>
+                <?php if (isset($client_meta['client_name'])) : ?>
                 <span><?php echo htmlspecialchars($client_meta['client_name']) ?></span>
+                <?php endif; ?>
             </div>
             <div class="client-meta">
+                <?php if (isset($client_meta['client_uri'])) : ?>
                 <a href="<?php echo htmlspecialchars($client_meta['client_uri']) ?>">Webpage</a>
+                <?php endif; ?>
+                <?php if (isset($client_meta['client_tos'])) : ?>
                 <a href="<?php echo htmlspecialchars($client_meta['client_tos']) ?>">Terms of Service</a>
+                <?php endif; ?>
+                <?php if (isset($client_meta['client_policy'])) : ?>
                 <a href="<?php echo htmlspecialchars($client_meta['client_policy']) ?>">Privacy Policy</a>
+                <?php endif; ?>
             </div>
             <?php endif; ?>
             <?php if (strlen($scope) > 0) : ?>
