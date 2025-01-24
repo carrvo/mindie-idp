@@ -18,6 +18,7 @@ License: [MIT](MIT-LICENSE.md)
 ### [setup](setup.php)
 
 - [multi-user support](https://github.com/Inklings-io/selfauth/pull/57)
+- line 98: remove `.php` extension because the endpoint is mapped to urlspace without it.
 
 ### [index](index.php)
 
