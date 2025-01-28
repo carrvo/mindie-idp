@@ -11,11 +11,6 @@ License: [MIT](MIT-LICENSE.md)
 - section: Multi-User Support
 - section: Endpoints
 
-### [multiuser-setup](multiuser-setup.bash)
-
-- new file
-- [multi-user support](https://github.com/Inklings-io/selfauth/pull/57) --> now [DB fix](https://github.com/carrvo/mindie-idp/issues/15)
-
 ### [schema](schema.sql)
 
 - new file
