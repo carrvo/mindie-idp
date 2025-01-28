@@ -2,7 +2,7 @@
 define('SELFAUTH_SQLITE_PATH', getenv('SELFAUTH_SQLITE_PATH'));
 
 $app_url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST']
-  . str_replace('setup.php', '', $_SERVER['REQUEST_URI']);
+  . preg_replace('/index.*$/', '', $_SERVER['REQUEST_URI']);
 
 if (!file_exists(SELFAUTH_SQLITE_PATH)) {
     header('HTTP/1.1 500 Internal Server Error');
