@@ -1,4 +1,28 @@
 <?php
+define('SELFAUTH_SQLITE_PATH', getenv('SELFAUTH_SQLITE_PATH'));
+
+$app_url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST']
+  . preg_replace('/index.*$/', '', $_SERVER['REQUEST_URI']);
+
+if (!file_exists(SELFAUTH_SQLITE_PATH)) {
+    header('HTTP/1.1 500 Internal Server Error');
+    header('Content-Type: text/plain;charset=UTF-8');
+    exit('The SelfAuth is not ready for use.');
+}
+
+function connectToDatabase(): PDO
+{
+    static $pdo;
+    if (!isset($pdo)) {
+        $pdo = new PDO('sqlite:' . SELFAUTH_SQLITE_PATH, null, null, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]);
+    }
+    return $pdo;
+}
+
 function error_page($header, $body, $http = '400 Bad Request')
 {
     $protocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0';
@@ -67,12 +91,12 @@ function verify_signed_code($key, $message, $code)
     return hash_equals($signature, $code_parts[1]);
 }
 
-function verify_password($pass)
+function verify_password($pass, $config)
 {
-    $hash_user = trim(preg_replace('/^https?:\/\//', '', USER_URL), '/');
-    $hash = md5($hash_user . $pass . APP_KEY);
+    $hash_user = trim(preg_replace('/^https?:\/\//', '', $config['user_url']), '/');
+    $hash = md5($hash_user . $pass . $config['app_key']);
 
-    return hash_equals(USER_HASH, $hash);
+    return hash_equals($config['user_hash'], $hash);
 }
 
 function filter_input_regexp($type, $variable, $regexp, $flags = null)
@@ -139,39 +163,46 @@ function base64_url_decode($string)
     return $string;
 }
 
-function load_user_config($configdir, $user_uri_encoded_filename): void {
-    if (getenv('SELFAUTH_MULTIUSER')) {
-        $userfile = $user_uri_encoded_filename;
-    }
-    else {
-        $userfile = 'config.php';
-    }
-    $configfile = $configdir . '/' . $userfile;
+function load_user_config($app_url, $user_uri=null): array {
+    $pdo = connectToDatabase();
 
-    if (file_exists($configfile)) {
-        include_once $configfile;
-    } else {
+    // searching for user
+    if ($user_uri === null) {
+        $statement = $pdo->prepare('SELECT * FROM logins WHERE app_url = ?');
+        $statement->execute([$app_url]);
+        $configs = $statement->fetchall(PDO::FETCH_ASSOC);
+        if ($configs === false || count($configs) === 0) {
+            error_page(
+                'Configuration Error',
+                'Endpoint not yet configured, visit <a href="setup">setup</a> for instructions on how to set it up.'
+            );
+        }
+        return $configs;
+    }
+
+    // checking single user
+    $statement = $pdo->prepare('SELECT * FROM logins WHERE app_url = ? AND user_url = ?');
+    $statement->execute([$app_url, $user_uri]);
+    $config = $statement->fetch(PDO::FETCH_ASSOC);
+    if ($config === false) {
         error_page(
             'Configuration Error',
             'Endpoint not yet configured, visit <a href="setup">setup</a> for instructions on how to set it up.'
         );
     }
 
-    if ((!defined('APP_URL') || APP_URL == '')
-        || (!defined('APP_KEY') || APP_KEY == '')
-        || (!defined('USER_HASH') || USER_HASH == '')
-        || (!defined('USER_URL') || USER_URL == '')
+    if ((!$config['app_url'] || $config['app_url'] == '')
+        || (!$config['app_key'] || $config['app_key'] == '')
+        || (!$config['user_hash'] || $config['user_hash'] == '')
+        || (!$config['user_url'] || $config['user_url'] == '')
     ) {
         error_page(
             'Configuration Error',
             'Endpoint not configured correctly, visit <a href="setup">setup</a> for instructions on how to set it up.'
         );
     }
-}
 
-$configdir = getenv('SELFAUTH_CONFIG');
-if (empty($configdir)) {
-    $configdir = __DIR__;
+    return [$config];
 }
 
 // First handle verification of codes.
@@ -181,22 +212,16 @@ if ($code !== null) {
     $redirect_uri = filter_input(INPUT_POST, 'redirect_uri', FILTER_VALIDATE_URL);
     $client_id = filter_input(INPUT_POST, 'client_id', FILTER_VALIDATE_URL);
 
+    $configs = load_user_config($app_url);
+
     // Scan through the existing users then
     // Exit if there are errors in the client supplied data.
-    $user_files = scandir($configdir);
     $user_verified = false;
-    foreach ($user_files as $user_file) {
-        // make sure we are only looking at proper config files
-        // when single-user, this will only ever be one file
-        // when multi-user, this will be the user files
-        if (preg_match('/^config(_.+)?\.php$/', $user_file) !== 1) {
-            continue;
-        }
-        load_user_config($configdir, $user_file);
+    foreach ($configs as $config) {
         if (!(is_string($code)
             && is_string($redirect_uri)
             && is_string($client_id)
-            && verify_signed_code(APP_KEY, USER_URL . $redirect_uri . $client_id, $code))
+            && verify_signed_code($config['app_key'], $config['user_url'] . $redirect_uri . $client_id, $code))
         ) {
             // NOT valid for this user
             continue;
@@ -210,7 +235,7 @@ if ($code !== null) {
         error_page('Verification Failed', 'Given Code Was Invalid');
     }
 
-    $response = array('me' => USER_URL);
+    $response = array('me' => $config['user_url']);
 
     $code_parts = explode(':', $code, 3);
 
@@ -249,7 +274,7 @@ if ($code !== null) {
 // If this is not verification, collect all the client supplied data. Exit on errors.
 
 $me = filter_input(INPUT_GET, 'me', FILTER_VALIDATE_URL);
-load_user_config($configdir, 'config_'.rawurlencode($me).'.php');
+$config = load_user_config($app_url, $me)[0];
 $client_id = filter_input(INPUT_GET, 'client_id', FILTER_VALIDATE_URL);
 $redirect_uri = filter_input(INPUT_GET, 'redirect_uri', FILTER_VALIDATE_URL);
 $state = filter_input_regexp(INPUT_GET, 'state', '@^[\x20-\x7E]*$@');
@@ -299,7 +324,7 @@ if ($pass_input !== null) {
     $csrf_code = filter_input(INPUT_POST, '_csrf', FILTER_UNSAFE_RAW);
 
     // Exit if the CSRF does not verify.
-    if ($csrf_code === null || !verify_signed_code(APP_KEY, $client_id . $redirect_uri . $state, $csrf_code)) {
+    if ($csrf_code === null || !verify_signed_code($config['app_key'], $client_id . $redirect_uri . $state, $csrf_code)) {
         error_page(
             'Invalid CSF Code',
             'Usually this means you took too long to log in. Please try again.'
@@ -307,7 +332,7 @@ if ($pass_input !== null) {
     }
 
     // Exit if the password does not verify.
-    if (!verify_password($pass_input)) {
+    if (!verify_password($pass_input, $config)) {
         // Optional logging for failed logins.
         //
         // Enabling this on shared hosting may not be a good idea if syslog
@@ -336,7 +361,7 @@ if ($pass_input !== null) {
         $scope = implode(' ', $scope);
     }
 
-    $code = create_signed_code(APP_KEY, USER_URL . $redirect_uri . $client_id, 5 * 60, $scope);
+    $code = create_signed_code($config['app_key'], $config['user_url'] . $redirect_uri . $client_id, 5 * 60, $scope);
 
     $final_redir = $redirect_uri;
     if (strpos($redirect_uri, '?') === false) {
@@ -348,7 +373,7 @@ if ($pass_input !== null) {
     $parameters = array(
         'code' => $code,
         'iss' => $issuer,
-        'me' => USER_URL
+        'me' => $config['user_url']
     );
     if ($state !== null) {
         $parameters['state'] = $state;
@@ -374,7 +399,7 @@ if ($pass_input !== null) {
 
 // If neither password nor a code was submitted, we need to ask the user to authenticate.
 
-$csrf_code = create_signed_code(APP_KEY, $client_id . $redirect_uri . $state, 2 * 60);
+$csrf_code = create_signed_code($config['app_key'], $client_id . $redirect_uri . $state, 2 * 60);
 
 function client_info(string $client_id) : ?array {
     if (function_exists('curl_init') !== true) {
@@ -425,7 +450,7 @@ padding:20px;
 .yellow{background-color:#FFC}
 
         </style>
-        <?php if (strcmp(getenv('SELFAUTH_ANONYMOUS_USER'), USER_URL) === 0) : ?>
+        <?php if (strcmp(getenv('SELFAUTH_ANONYMOUS_USER'), $config['user_url']) === 0) : ?>
         <script>
         document.addEventListener("DOMContentLoaded", (event) => {
             document.getElementById("password").value = "<?php echo getenv('SELFAUTH_ANONYMOUS_PASS') ?>";
@@ -466,7 +491,7 @@ padding:20px;
                 <input type="hidden" name="_csrf" value="<?php echo $csrf_code; ?>" />
                 <p class="form-line">
                     Logging in as:<br />
-                    <span class="yellow"><?php echo htmlspecialchars(USER_URL); ?></span>
+                    <span class="yellow"><?php echo htmlspecialchars($config['user_url']); ?></span>
                 </p>
                 <div class="form-line">
                     <label for="password">Password:</label><br />

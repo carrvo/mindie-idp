@@ -11,19 +11,20 @@ License: [MIT](MIT-LICENSE.md)
 - section: Multi-User Support
 - section: Endpoints
 
-### [multiuser-setup](multiuser-setup.bash)
+### [schema](schema.sql)
 
 - new file
+- [multi-user support](https://github.com/Inklings-io/selfauth/pull/57) --> now [DB fix](https://github.com/carrvo/mindie-idp/issues/15)
 
 ### [setup](setup.php)
 
-- [multi-user support](https://github.com/Inklings-io/selfauth/pull/57)
+- [multi-user support](https://github.com/Inklings-io/selfauth/pull/57) --> now [DB fix](https://github.com/carrvo/mindie-idp/issues/15)
 - line 98: remove `.php` extension because the endpoint is mapped to urlspace without it.
 
 ### [index](index.php)
 
 - [support discovery](https://github.com/Inklings-io/selfauth/pull/55)
-- [multi-user support](https://github.com/Inklings-io/selfauth/pull/57)
+- [multi-user support](https://github.com/Inklings-io/selfauth/pull/57) --> now [DB fix](https://github.com/carrvo/mindie-idp/issues/15)
 - [client discovery](https://github.com/Inklings-io/selfauth/pull/59)
 - auto-click for configured anonymous user (lines 428-435)
 
