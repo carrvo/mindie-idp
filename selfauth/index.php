@@ -181,7 +181,7 @@ function load_user_config($app_url, $user_uri=null): array {
     }
 
     // checking single user
-    $statement = $pdo->prepare('SELECT * FROM logins WHERE app_url = ? && user_url = ?');
+    $statement = $pdo->prepare('SELECT * FROM logins WHERE app_url = ? AND user_url = ?');
     $statement->execute([$app_url, $user_uri]);
     $config = $statement->fetch(PDO::FETCH_ASSOC);
     if ($config === false) {
