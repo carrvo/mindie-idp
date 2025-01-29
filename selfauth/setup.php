@@ -27,9 +27,73 @@ padding:20px;
 <div>
 <?php
 define('RANDOM_BYTE_COUNT', 32);
+define('SELFAUTH_SQLITE_PATH', getenv('SELFAUTH_SQLITE_PATH'));
 
 $app_url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST']
-  . str_replace('setup.php', '', $_SERVER['REQUEST_URI']);
+  . str_replace('setup', '', $_SERVER['REQUEST_URI']);
+
+if (!file_exists(SELFAUTH_SQLITE_PATH)) {
+    header('HTTP/1.1 500 Internal Server Error');
+    header('Content-Type: text/plain;charset=UTF-8');
+    exit('The SelfAuth is not ready for use.');
+}
+
+function connectToDatabase(): PDO
+{
+    static $pdo;
+    if (!isset($pdo)) {
+        $pdo = new PDO('sqlite:' . SELFAUTH_SQLITE_PATH, null, null, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]);
+    }
+    return $pdo;
+}
+
+function load_user_config($app_url, $user_uri): mixed {
+    $pdo = connectToDatabase();
+
+    // checking single user
+    $statement = $pdo->prepare('SELECT * FROM logins WHERE app_url = ? AND user_url = ?');
+    $statement->execute([$app_url, $user_uri]);
+    $config = $statement->fetch(PDO::FETCH_ASSOC);
+    if ($config === false) {
+        return null;
+    }
+
+    if ((!$config['app_url'] || $config['app_url'] == '')
+        || (!$config['app_key'] || $config['app_key'] == '')
+        || (!$config['user_hash'] || $config['user_hash'] == '')
+        || (!$config['user_url'] || $config['user_url'] == '')
+    ) {
+        return null;
+    }
+
+    return $config;
+}
+
+function store_user_config(string $app_url, string $app_key, string $pass, string $user): void
+{
+    $pdo = connectToDatabase();
+    for ($i = 0; $i < 10; $i++) {
+        // We have to prepare inside the loop, https://github.com/teamtnt/tntsearch/pull/126
+        $statement = $pdo->prepare('INSERT INTO logins (app_url, app_key, user_hash, user_url) VALUES (?, ?, ?, ?)');
+        try {
+            $statement->execute([$app_url, $app_key, $pass, $user]);
+        } catch (PDOException $e) {
+            $lastException = $e;
+            if ($statement->errorInfo()[1] !== 19) {
+                throw $e;
+            }
+            continue;
+        }
+        break;
+    }
+    if ($lastException !== null) {
+        throw $e;
+    }
+}
 
 if (function_exists('random_bytes')) {
     $bytes = random_bytes(RANDOM_BYTE_COUNT);
@@ -45,32 +109,12 @@ if (function_exists('random_bytes')) {
 }
 $app_key = bin2hex($bytes);
 
-$configdir = getenv('SELFAUTH_CONFIG');
-if (empty($configdir)) {
-    $configdir = __DIR__;
-}
-if (getenv('SELFAUTH_MULTIUSER')) {
-    $userfile = '.php';
-    if (isset($_POST['username'])) {
-        $app_user = rawurlencode($_POST['username']);
-        $userfile = "config_$app_user.php";
-    }
-}
-else {
-    $userfile = 'config.php';
-}
-$configfile = $configdir . '/' . $userfile;
-
 $configured = true;
 
-if (file_exists($configfile)) {
-    include_once $configfile;
-
-    if ((!defined('APP_URL') || APP_URL == '')
-        || (!defined('APP_KEY') || APP_KEY == '')
-        || (!defined('USER_HASH') || USER_HASH == '')
-        || (!defined('USER_URL') || USER_URL == '')
-    ) {
+if (isset($_POST['username'])) {
+    $app_user = $_POST['username'];
+    $config = load_user_config($app_user, null);
+    if ($config === null) {
         $configured = false;
     }
 } else {
@@ -95,45 +139,16 @@ if ($configured) : ?>
     <?php if (isset($_POST['username'])) : ?>
     <div>
     <?php
-    $app_url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . str_replace('setup.php', '', $_SERVER['REQUEST_URI']);
+    $app_url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . str_replace('setup', '', $_SERVER['REQUEST_URI']);
 
     $user = $_POST['username'];
 
     $user_tmp = trim(preg_replace('/^https?:\/\//', '', $_POST['username']), '/');
     $pass = md5($user_tmp . $_POST['password'] . $app_key);
 
-    $config_file_contents = "<?php
-define('APP_URL', '$app_url');
-define('APP_KEY', '$app_key');
-define('USER_HASH', '$pass');
-define('USER_URL', '$user');";
+    store_user_config($app_url, $app_key, $pass, $user);
 
-    $file_written = false;
-
-    $file_exists_and_can_be_written = file_exists($configfile) && is_writeable($configfile);
-    $file_not_exist_but_dir_can_be_written = !file_exists($configfile) && is_writeable($configdir);
-    if (!$configured && ($file_exists_and_can_be_written || $file_not_exist_but_dir_can_be_written)) {
-        $handle = fopen($configfile, 'w');
-
-        if ($handle) {
-            $result = fwrite($handle, $config_file_contents);
-            if ($result !== false) {
-                $file_written = true;
-            }
-        }
-
-        fclose($handle);
-    }
-
-
-    if ($file_written) {
-        echo '<div class="message">'.$userfile.' was successfully written to disk</div>';
-    } else {
-        echo '<div class="message">Fill in the file '.$userfile.' with the following content</div>';
-        echo '<pre>';
-        echo htmlentities($config_file_contents);
-        echo '</pre>';
-    }
+    echo '<div class="message">Was successfully written to disk</div>';
 ?>
     </div>
     <?php endif ?>
