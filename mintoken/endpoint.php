@@ -238,6 +238,7 @@ if ($method === 'GET') {
             header('HTTP/1.0 401 Unauthorized');
             exit('Unauthorized');
         }
+        markTokenUsed($tokenInfo['token_id']);
         header('HTTP/1.1 200 OK');
         header('Content-Type: application/json;charset=UTF-8');
         exit(json_encode([
