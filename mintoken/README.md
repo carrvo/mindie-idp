@@ -16,6 +16,7 @@ License: [0BSD](LICENSE)
 - `define('MINTOKEN_SQLITE_PATH', '/var/lib/php-mintoken/tokens.sqlite3');`
 - [no more me](https://github.com/Zegnat/php-mintoken/pull/14)
 - [introspection](https://github.com/Zegnat/php-mintoken/pull/15)
+- additional logging statements
 
 # Mintoken
 

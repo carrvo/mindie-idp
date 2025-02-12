@@ -131,6 +131,7 @@ function verifyCode(string $code, string $client_id, string $redirect_uri, strin
     curl_close($curl);
     $info = json_decode($body, true, 2);
     if (json_last_error() !== JSON_ERROR_NONE) {
+        error_log('Failed to decode '.$body);
         return null;
     }
     $info = filter_var_array($info, [
@@ -141,13 +142,15 @@ function verifyCode(string $code, string $client_id, string $redirect_uri, strin
         ],
     ]);
     if (in_array(null, $info, true) || in_array(false, $info, true)) {
+    error_log('Found null or false in '.print_r($info, true).' during code verification');
         return null;
     }
     return $info;
 }
 
-function invalidRequest(): void
+function invalidRequest(string $log): void
 {
+    error_log($log);
     // This is probably wrong, but RFC 6750 is a little unclear.
     // Maybe this should be handled per RFC 6749, putting the error code in the redirect?
     header('HTTP/1.1 400 Bad Request');
@@ -204,7 +207,7 @@ if ($method === 'GET') {
     $action = filter_input(INPUT_GET, 'action', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => '@^(revoke|introspect|authorize)$@']]);
     $token = filter_input(INPUT_POST, 'token', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => '@^[0-9a-f]+_[0-9a-f]+$@']]);
     if (!is_string($action)) {
-        invalidRequest();
+        invalidRequest('no action provided');
     }
     // check if is POST+revoke request
     if ($action === 'revoke') {
@@ -238,7 +241,6 @@ if ($method === 'GET') {
             header('HTTP/1.0 401 Unauthorized');
             exit('Unauthorized');
         }
-        markTokenUsed($tokenInfo['token_id']);
         header('HTTP/1.1 200 OK');
         header('Content-Type: application/json;charset=UTF-8');
         exit(json_encode([
@@ -266,7 +268,7 @@ if ($method === 'GET') {
         'redirect_uri' => FILTER_VALIDATE_URL,
     ]);
     if (in_array(null, $request, true) || in_array(false, $request, true)) {
-        invalidRequest();
+        invalidRequest('missing field for request: '.print_r($request, true));
     }
     $endpoints = getTrustedEndpoints();
     foreach ($endpoints as $endpoint) {
@@ -276,7 +278,7 @@ if ($method === 'GET') {
         }
     }
     if ($info === null) {
-        invalidRequest();
+        invalidRequest('no trusted endpoint accepted the code');
     }
     $token = storeToken($info['me'], $request['client_id'], $info['scope']);
     header('HTTP/1.1 200 OK');

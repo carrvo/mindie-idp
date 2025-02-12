@@ -27,6 +27,7 @@ function error_page($header, $body, $http = '400 Bad Request')
 {
     $protocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0';
     header($protocol . ' ' . $http);
+    error_log($protocol . ' ' . $http . ' Error: ' . $header . ' - ' . $body);
     $html = <<<HTML
 <!doctype html>
 <html>
