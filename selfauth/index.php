@@ -243,6 +243,10 @@ if ($code !== null) {
     if ($code_parts[2] !== '') {
         $response['scope'] = base64_url_decode($code_parts[2]);
     }
+    else {
+        # MinToken requires there to be *some* scope as a part of ensuring a valid reply
+        $response['scope'] = 'none';
+    }
 
     // Accept header
     $accept_header = '*/*';
