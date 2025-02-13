@@ -26,7 +26,8 @@ License: [MIT](MIT-LICENSE.md)
 - [support discovery](https://github.com/Inklings-io/selfauth/pull/55)
 - [multi-user support](https://github.com/Inklings-io/selfauth/pull/57) --> now [DB fix](https://github.com/carrvo/mindie-idp/issues/15)
 - [client discovery](https://github.com/Inklings-io/selfauth/pull/59)
-- auto-click for configured anonymous user (lines 428-435)
+- auto-click for configured anonymous user (lines 458-465)
+- enforce some scope returned (lines 246-249)
 - additional logging statements
 
 # Selfauth
