@@ -1,0 +1,12 @@
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/files
+debian/mindie-idp.debhelper.log
+debian/mindie-idp.postinst.debhelper
+debian/mindie-idp.postrm.debhelper
+debian/mindie-idp.prerm.debhelper
+debian/mindie-idp.substvars
+debian/mindie-idp/
+mindie-idp/
+package/
+
