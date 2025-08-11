@@ -3,6 +3,15 @@ set -e
 
 #DEBHELPER#
 
+if true; then
+	if [ -e /usr/share/apache2/apache2-maintscript-helper ] ; then
+		. /usr/share/apache2/apache2-maintscript-helper
+			apache2_invoke enmod selfauth  || exit 1
+			apache2_invoke enmod mintoken  || exit 1
+			apache2_invoke enmod sitewide-metadata  || exit 1
+	fi
+fi
+
 # SelfAuth
 if [ ! -d /var/lib/selfauth/ ];
 then
