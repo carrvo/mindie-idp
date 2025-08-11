@@ -1,22 +1,27 @@
-#!/bin/bash
-
+#!/bin/sh
 set -e
 
 #DEBHELPER#
 
 # SelfAuth
-sudo mkdir /var/lib/selfauth
-sudo chgrp www-data /var/lib/selfauth/
-sudo chmod g+rwx /var/lib/selfauth/
-sudo sqlite3 /var/lib/selfauth/multiuser.sqlite3 < /usr/src/mindie-idp/selfauth/schema.sql
-sudo chgrp www-data /var/lib/selfauth/multiuser.sqlite3
-sudo chmod g+rw /var/lib/selfauth/multiuser.sqlite3
+mkdir /var/lib/selfauth || true
+chgrp www-data /var/lib/selfauth/
+chmod g+rwx /var/lib/selfauth/
+if [ ! -f /var/lib/selfauth/multiuser.sqlite3 ];
+then
+    sqlite3 /var/lib/selfauth/multiuser.sqlite3 < /usr/src/mindie-idp/selfauth/schema.sql
+fi
+chgrp www-data /var/lib/selfauth/multiuser.sqlite3
+chmod g+rw /var/lib/selfauth/multiuser.sqlite3
 # MinToken
-sudo mkdir /var/lib/php-mintoken
-sudo chgrp www-data /var/lib/php-mintoken/
-sudo chmod g+rwx /var/lib/php-mintoken/
-sudo sqlite3 /var/lib/php-mintoken/tokens.sqlite3 < /usr/src/mindie-idp/mintoken/schema.sql
-sudo chgrp www-data /var/lib/php-mintoken/tokens.sqlite3
-sudo chmod g+rw /var/lib/php-mintoken/tokens.sqlite3
+mkdir /var/lib/php-mintoken || true
+chgrp www-data /var/lib/php-mintoken/
+chmod g+rwx /var/lib/php-mintoken/
+if [ ! -f /var/lib/php-mintoken/tokens.sqlite3 ];
+then
+    sqlite3 /var/lib/php-mintoken/tokens.sqlite3 < /usr/src/mindie-idp/mintoken/schema.sql
+fi
+chgrp www-data /var/lib/php-mintoken/tokens.sqlite3
+chmod g+rw /var/lib/php-mintoken/tokens.sqlite3
 
 exit 0
