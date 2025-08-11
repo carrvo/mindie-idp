@@ -7,6 +7,5 @@ debian/mindie-idp.postrm.debhelper
 debian/mindie-idp.prerm.debhelper
 debian/mindie-idp.substvars
 debian/mindie-idp/
-mindie-idp/
 package/
 
