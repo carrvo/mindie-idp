@@ -1,0 +1,33 @@
+#!/bin/sh
+set -e
+
+#DEBHELPER#
+
+# SelfAuth
+if [ ! -d /var/lib/selfauth/ ];
+then
+    mkdir /var/lib/selfauth
+fi
+chgrp www-data /var/lib/selfauth/
+chmod g+rwx /var/lib/selfauth/
+if [ ! -f /var/lib/selfauth/multiuser.sqlite3 ];
+then
+    sqlite3 /var/lib/selfauth/multiuser.sqlite3 < /usr/src/mindie-idp/selfauth/schema.sql
+fi
+chgrp www-data /var/lib/selfauth/multiuser.sqlite3
+chmod g+rw /var/lib/selfauth/multiuser.sqlite3
+# MinToken
+if [ ! -d /var/lib/php-mintoken/ ];
+then
+    mkdir /var/lib/php-mintoken
+fi
+chgrp www-data /var/lib/php-mintoken/
+chmod g+rwx /var/lib/php-mintoken/
+if [ ! -f /var/lib/php-mintoken/tokens.sqlite3 ];
+then
+    sqlite3 /var/lib/php-mintoken/tokens.sqlite3 < /usr/src/mindie-idp/mintoken/schema.sql
+fi
+chgrp www-data /var/lib/php-mintoken/tokens.sqlite3
+chmod g+rw /var/lib/php-mintoken/tokens.sqlite3
+
+exit 0

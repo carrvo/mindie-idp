@@ -1,0 +1,3 @@
+conf selfauth.conf
+conf mintoken.conf
+conf sitewide-metadata.conf

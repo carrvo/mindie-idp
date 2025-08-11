@@ -1,0 +1,29 @@
+Source: mindie-idp
+Maintainer: carrvo  <carrvo@gmail.com>
+Uploaders: carrvo <carrvo@gmail.com>
+Section: httpd
+Priority: optional
+Standards-Version: 4.6.2
+Build-Depends: debhelper-compat (= 13),
+    apache2-api-20120211,
+    apache2-dev,
+    dh-apache2
+Homepage: https://github.com/carrvo/mindie-idp
+Vcs-Browser: https://github.com/carrvo/mindie-idp
+Vcs-Git: https://github.com/carrvo/mindie-idp
+
+Package: mindie-idp
+Architecture: all
+Depends: ${misc:Depends}, php, php-curl, php-dom, php-sqlite3, sqlite3
+Homepage: https://github.com/carrvo/mindie-idp
+Description: Built upon SelfAuth + MinToken to give a
+ minimally self-hosted IndieAuth Identity Provider (IdP).
+ .
+ This IdP will be compatible with both IndieAuth and OAuth2.0
+ (Auth0.com) clients.
+ This also supports metadata discovery and the deprecated
+ rel="authorization_endpoint" mechanisms.
+ .
+ If you are NOT looking for self-hosting, then you likely
+ want to look at IndieAuth.com to find information on how you
+ can use your existing social accounts for IndieAuth logins.
