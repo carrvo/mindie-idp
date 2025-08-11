@@ -6,15 +6,11 @@ If you are **NOT** looking for self-hosting, then you likely want to look at [In
 
 ## Setup
 
-1. Clone to `/usr/local/src/`
-1. Run `dependencies.bash` to install dependent Ubuntu packages (like Apache HTTPd and PHP).
+1. Clone
+1. Run `debian-package-dependencies` to install dependent *build* Debian packages
+1. Run `make debian-package` to build package locally
+1. Run `dpkg -i package/mindie-idp_X.X.X_all.deb` to install package locally
 1. Run `setup.bash` to setup required directories and files.
-1. Add configuration to your Apache HTTPd configuration
-    ```
-    Include /usr/local/src/mindie-idp/sitewide-metadata.conf
-    Include /usr/local/src/mindie-idp/selfauth.conf
-    Include /usr/local/src/mindie-idp/mintoken.conf
-    ```
 1. Trust your server
     ```bash
     sudo sqlite3 /var/lib/php-mintoken/tokens.sqlite3 'INSERT INTO settings VALUES ("endpoint", "https://example.com/selfauth/index");'
