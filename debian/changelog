@@ -1,3 +1,9 @@
+mindie-idp (1.1.2) unstable; urgency=medium
+
+  * Remove Resource Server Authorization #22 
+
+ -- carrvo <carrvo@gmail.com>  Wed, 29 Oct 2025 18:11:55 -0600
+
 mindie-idp (1.1.1) unstable; urgency=medium
 
   * Initial release.
