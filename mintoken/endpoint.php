@@ -228,19 +228,8 @@ if ($method === 'GET') {
             ]));
         }
         // Authorize resource server as per specification (see https://indieauth.spec.indieweb.org/#access-token-verification-response-p-1)
-        // For us this means we are expecting the Basic user to be the client ID of the consumer.
-        // With basic, everything after the first colon (:) is considered the password.
-        // Since we are working with URIs to identify, we need to handle
-        // the pattern scheme://domain/path:password
-        // To do this, we assume (and enforce) that the password is a single underscore (_).
-        $basicAuth = $_SERVER['PHP_AUTH_USER'] . ':' . $_SERVER['PHP_AUTH_PW'];
-        $storedAuth = $tokenInfo['auth_client_id'] . ':_';
-        $storedAuthEncoded = urlencode($tokenInfo['auth_client_id']) . ':_';
-        if ($storedAuth !== $basicAuth && $storedAuthEncoded !== $basicAuth) {
-            header('WWW-Authenticate: Basic');
-            header('HTTP/1.0 401 Unauthorized');
-            exit('Unauthorized');
-        }
+        // REMOVED because none of the implementations in the wild follow the spec for Authorization
+
         header('HTTP/1.1 200 OK');
         header('Content-Type: application/json;charset=UTF-8');
         exit(json_encode([
