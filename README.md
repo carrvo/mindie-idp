@@ -4,6 +4,8 @@ Built upon [SelfAuth](selfauth/README.md) ([source](https://github.com/Inklings-
 
 If you are **NOT** looking for self-hosting, then you likely want to look at [IndieAuth.com](https://indieauth.com/) to find information on how you can use your existing social accounts for IndieAuth logins.
 
+This provides the IDP component of [MIndie](https://github.com/carrvo/mindie).
+
 ## Setup
 
 1. Clone
