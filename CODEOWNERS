@@ -1,0 +1,11 @@
+# Add yourself to whatever files are appropriate for you to review
+/selfauth/              carrvo@gmail.com
+/mintoken/              carrvo@gmail.com
+
+# IMPORTANT CODEOWNERS -- ADD YOURS ABOVE
+/CODEOWNERS             carrvo@gmail.com
+/LICENSE                carrvo@gmail.com
+/MIT-LICENSE.md         carrvo@gmail.com
+/debian/copyright       carrvo@gmail.com
+/debian/control         carrvo@gmail.com
+/debian/changelog       carrvo@gmail.com
