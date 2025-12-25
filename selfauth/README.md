@@ -29,6 +29,7 @@ License: [MIT](MIT-LICENSE.md)
 - auto-click for configured anonymous user (lines 458-465)
 - enforce some scope returned (lines 246-249)
 - additional logging statements
+- convert to library for [#24](https://github.com/carrvo/mindie-idp/issues/24)
 
 # Selfauth
 
