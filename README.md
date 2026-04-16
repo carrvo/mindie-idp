@@ -54,6 +54,9 @@ To enable this support, configure Apache HTTPd with
 </Location>
 ```
 
+Also, you ***MUST*** ensure that Apache HTTPd has permission to run
+[`htpasswd`](https://httpd.apache.org/docs/current/programs/htpasswd.html) against the file.
+
 Note that since Basic Auth uses the semicolon (`:`) to denote user and password,
 the scheme of the URL has to be scrubbed from the Basic Auth login (users ***MUST*** not enter this).
 
