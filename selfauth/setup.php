@@ -147,8 +147,30 @@ if ($configured) : ?>
     $pass = md5($user_tmp . $_POST['password'] . $app_key);
 
     store_user_config($app_url, $app_key, $pass, $user);
-
     echo '<div class="message">Was successfully written to disk</div>';
+
+    if (empty(getenv('AuthUserFile')) !== true) {
+        echo '<div class="message">Adding Basic Auth support:</div>';
+        $output=null;
+        $retval=null;
+        $cmd_ran = exec("htpasswd -b {getenv('AuthUserFile')} {$user} {$_POST['password']}", $output, $retval);
+
+        // Results
+        if ($cmd_ran === false) {
+            error_log("[selfauth:info] htpasswd failed to run");
+            echo '<div class="message">htpasswd failed to run</div>';
+        }
+        if ($retval != 0) {
+            error_log("[selfauth:info] htpasswd returned with status $retval");
+            echo '<div class="message">htpasswd returned with status ' . $retval . '</div>';
+        }
+        foreach ($output as $line) {
+            echo '<div class="message">';
+            echo $line;
+            echo '</div>';
+        }
+        echo '<div class="message">Done Basic Auth support.</div>';
+    }
 ?>
     </div>
     <?php endif ?>

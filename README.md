@@ -42,6 +42,21 @@ If you would like to create an anonymous user then follow these steps:
     </Location>
     ```
 
+### Basic Auth
+
+You *MAY* choose to have SelfAuth setup your `.htpasswd` as well to keep it in sync with IndieAuth.
+This is especially useful in scenarios where IndieAuth is not available (such as a network drive).
+
+To enable this support, configure Apache HTTPd with
+```
+<Location /selfauth/>
+    SetEnv AuthUserFile /path/to/.htpasswd
+</Location>
+```
+
+Note that since Basic Auth uses the semicolon (`:`) to denote user and password,
+the scheme of the URL has to be scrubbed from the Basic Auth login (users ***MUST*** not enter this).
+
 ## Usage
 
 Use the https://example.com/selfauth/setup to add users.
