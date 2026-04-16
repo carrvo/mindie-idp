@@ -153,7 +153,9 @@ if ($configured) : ?>
         echo '<div class="message">Adding Basic Auth support:</div>';
         $output=null;
         $retval=null;
-        $cmd_ran = exec("htpasswd -b {getenv('AuthUserFile')} {$user} {$_POST['password']}", $output, $retval);
+        # Due to Basic Auth using the semicolon (`:`) to denote user and password,
+        # the scheme of the URL has to be scrubbed from the Basic Auth login.
+        $cmd_ran = exec("htpasswd -b {getenv('AuthUserFile')} {$user_tmp} {$_POST['password']}", $output, $retval);
 
         // Results
         if ($cmd_ran === false) {
