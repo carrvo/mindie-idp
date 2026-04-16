@@ -158,8 +158,12 @@ function invalidRequest(string $log): void
     exit('invalid_request');
 }
 
-$method = filter_input(INPUT_SERVER, 'REQUEST_METHOD', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => '@^[!#$%&\'*+.^_`|~0-9a-z-]+$@i']]);
-if ($method === 'GET') {
+function get_method() {
+    $method = filter_input(INPUT_SERVER, 'REQUEST_METHOD', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => '@^[!#$%&\'*+.^_`|~0-9a-z-]+$@i']]);
+    return $method;
+}
+
+function token_use() {
     $bearer_regexp = '@^Bearer [0-9a-f]+_[0-9a-f]+$@';
     $authorization = filter_input(INPUT_SERVER, 'HTTP_AUTHORIZATION', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => $bearer_regexp]])
         ?? filter_input(INPUT_SERVER, 'REDIRECT_HTTP_AUTHORIZATION', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => $bearer_regexp]]);
@@ -198,52 +202,53 @@ if ($method === 'GET') {
             ]));
         }
     }
-} elseif ($method === 'POST') {
+}
+
+function get_media_type() {
     $type = filter_input(INPUT_SERVER, 'CONTENT_TYPE', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => '@^application/x-www-form-urlencoded(;.*)?$@']]);
     if (!is_string($type)) {
         header('HTTP/1.1 415 Unsupported Media Type');
         exit();
     }
-    $action = filter_input(INPUT_GET, 'action', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => '@^(revoke|introspect|authorize)$@']]);
-    $token = filter_input(INPUT_POST, 'token', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => '@^[0-9a-f]+_[0-9a-f]+$@']]);
-    if (!is_string($action)) {
-        invalidRequest('no action provided');
-    }
-    // check if is POST+revoke request
-    if ($action === 'revoke') {
-        if (is_string($token)) {
-            revokeToken($token);
-        }
-        header('HTTP/1.1 200 OK');
-        exit();
-    }
-    // check if is POST+introspection request
-    if ($action === 'introspect') {
-        $tokenInfo = retrieveToken($token);
-        if ($tokenInfo === null || $tokenInfo['active'] === '0') {
-            header('HTTP/1.1 200 OK');
-            header('Content-Type: application/json;charset=UTF-8');
-            exit(json_encode([
-                'active' => false,
-            ]));
-        }
-        // Authorize resource server as per specification (see https://indieauth.spec.indieweb.org/#access-token-verification-response-p-1)
-        // REMOVED because none of the implementations in the wild follow the spec for Authorization
+    return $type;
+}
 
+function get_token_action() {
+    $action = filter_input(INPUT_GET, 'action', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => '@^(revoke|introspect|authorize)$@']]);
+    return $action;
+}
+
+function get_token() {
+    $token = filter_input(INPUT_POST, 'token', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => '@^[0-9a-f]+_[0-9a-f]+$@']]);
+    return $token;
+}
+
+function token_introspection($token, $tokenInfo) {
+    if ($tokenInfo === null || $tokenInfo['active'] === '0') {
         header('HTTP/1.1 200 OK');
         header('Content-Type: application/json;charset=UTF-8');
         exit(json_encode([
-            'token_type' => 'Bearer',
-            'me' => $tokenInfo['auth_me'],
-            'sub' => $tokenInfo['auth_me'],
-            'client_id' => $tokenInfo['auth_client_id'],
-            'scope' => $tokenInfo['auth_scope'],
-            'iat' => strtotime($tokenInfo['created']),
-            'exp' => strtotime($tokenInfo['revoked']),
-            'active' => true,
+            'active' => false,
         ]));
     }
-    // else is a POST+authorization request
+    // Authorize resource server as per specification (see https://indieauth.spec.indieweb.org/#access-token-verification-response-p-1)
+    // REMOVED because none of the implementations in the wild follow the spec for Authorization
+
+    header('HTTP/1.1 200 OK');
+    header('Content-Type: application/json;charset=UTF-8');
+    exit(json_encode([
+        'token_type' => 'Bearer',
+        'me' => $tokenInfo['auth_me'],
+        'sub' => $tokenInfo['auth_me'],
+        'client_id' => $tokenInfo['auth_client_id'],
+        'scope' => $tokenInfo['auth_scope'],
+        'iat' => strtotime($tokenInfo['created']),
+        'exp' => strtotime($tokenInfo['revoked']),
+        'active' => true,
+    ]));
+}
+
+function get_request() {
     $request = filter_input_array(INPUT_POST, [
         'grant_type' => [
             'filter' => FILTER_VALIDATE_REGEXP,
@@ -259,7 +264,10 @@ if ($method === 'GET') {
     if (in_array(null, $request, true) || in_array(false, $request, true)) {
         invalidRequest('missing field for request: '.print_r($request, true));
     }
-    $endpoints = getTrustedEndpoints();
+    return $request;
+}
+
+function verify_against_trusted($request, $endpoints) {
     foreach ($endpoints as $endpoint) {
         $info = verifyCode($request['code'], $request['client_id'], $request['redirect_uri'], $endpoint);
         if ($info !== null) {
@@ -269,19 +277,7 @@ if ($method === 'GET') {
     if ($info === null) {
         invalidRequest('no trusted endpoint accepted the code');
     }
-    $token = storeToken($info['me'], $request['client_id'], $info['scope']);
-    header('HTTP/1.1 200 OK');
-    header('Content-Type: application/json;charset=UTF-8');
-    exit(json_encode([
-        'access_token' => $token,
-        'token_type' => 'Bearer',
-        'scope' => $info['scope'],
-        'me' => $info['me'],
-    ]));
-} else {
-    header('HTTP/1.1 405 Method Not Allowed');
-    header('Allow: GET, POST');
-    exit();
+    return $info;
 }
 
 /**

@@ -17,6 +17,7 @@ License: [0BSD](LICENSE)
 - [no more me](https://github.com/Zegnat/php-mintoken/pull/14)
 - [introspection](https://github.com/Zegnat/php-mintoken/pull/15)
 - additional logging statements
+- convert to library for [#24](https://github.com/carrvo/mindie-idp/issues/24)
 
 # Mintoken
 
