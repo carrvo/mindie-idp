@@ -150,12 +150,13 @@ if ($configured) : ?>
     echo '<div class="message">Was successfully written to disk</div>';
 
     if (empty(getenv('AuthUserFile')) !== true) {
+        $auth_file = getenv('AuthUserFile');
         echo '<div class="message">Adding Basic Auth support:</div>';
         $output=null;
         $retval=null;
         # Due to Basic Auth using the semicolon (`:`) to denote user and password,
         # the scheme of the URL has to be scrubbed from the Basic Auth login.
-        $cmd_ran = exec("htpasswd -b {getenv('AuthUserFile')} {$user_tmp} {$_POST['password']}", $output, $retval);
+        $cmd_ran = exec("htpasswd -b {$auth_file} {$user_tmp} {$_POST['password']}", $output, $retval);
 
         // Results
         if ($cmd_ran === false) {
