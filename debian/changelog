@@ -1,3 +1,9 @@
+mindie-idp (1.2.0) unstable; urgency=medium
+
+  * Intermediate solution for Basic Auth #18
+
+ -- carrvo <carrvo@gmail.com>  Thu, 16 Apr 2026 09:50:03 -0600
+
 mindie-idp (1.1.2) unstable; urgency=medium
 
   * Remove Resource Server Authorization #22 
