@@ -1,3 +1,9 @@
+mindie-idp (2.0.0) unstable; urgency=medium
+
+  * Merge SelfAuth and MinToken #24
+
+ -- carrvo <carrvo@gmail.com>  Mon, 17 Aug 2026 19:38:55 -0600
+
 mindie-idp (1.2.0) unstable; urgency=medium
 
   * Intermediate solution for Basic Auth #18
