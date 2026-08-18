@@ -75,7 +75,7 @@ $csrf_code_post = filter_input(INPUT_POST, '_csrf', FILTER_UNSAFE_RAW);
 
 $scope_post = filter_input_regexp(INPUT_POST, 'scopes', '@^[\x21\x23-\x5B\x5D-\x7E]+$@', FILTER_REQUIRE_ARRAY);
 
-check_pass($redirect_uri, $client_id, $user_verified, $me, $state, $pass_input_post, $csrf_code_post, $scope_post);
+check_pass($redirect_uri, $client_id, $config, $me, $state, $pass_input_post, $csrf_code_post, $scope_post);
 
 // If neither password nor a code was submitted, we need to ask the user to authenticate.
 

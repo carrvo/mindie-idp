@@ -11,7 +11,7 @@ if (!file_exists(MINTOKEN_SQLITE_PATH)) {
     exit('The token endpoint is not ready for use.');
 }
 
-function connectToDatabase(): PDO
+function connectToTokenDatabase(): PDO
 {
     static $pdo;
     if (!isset($pdo)) {
@@ -39,7 +39,7 @@ function initCurl(string $url)/* : resource */
 
 function storeToken(string $me, string $client_id, string $scope): string
 {
-    $pdo = connectToDatabase();
+    $pdo = connectToTokenDatabase();
     do {
         $hashable = substr(str_replace(chr(0), '', random_bytes(100)), 0, 72);
         $hash = password_hash($hashable, PASSWORD_BCRYPT);
@@ -77,7 +77,7 @@ function storeToken(string $me, string $client_id, string $scope): string
 function retrieveToken(string $token): ?array
 {
     list($id, $hashable) = explode('_', $token);
-    $pdo = connectToDatabase();
+    $pdo = connectToTokenDatabase();
     $statement = $pdo->prepare('SELECT *, revoked > CURRENT_TIMESTAMP AS active FROM tokens WHERE token_id = ?');
     $statement->execute([$id]);
     $token = $statement->fetch(PDO::FETCH_ASSOC);
@@ -89,7 +89,7 @@ function retrieveToken(string $token): ?array
 
 function markTokenUsed(string $tokenId): void
 {
-    $pdo = connectToDatabase();
+    $pdo = connectToTokenDatabase();
     $statement = $pdo->prepare('UPDATE tokens SET last_use = CURRENT_TIMESTAMP WHERE token_id = ? AND (last_use IS NULL OR last_use < CURRENT_TIMESTAMP)');
     $statement->execute([$tokenId]);
 }
@@ -98,7 +98,7 @@ function revokeToken(string $token): void
 {
     $token = retrieveToken($token);
     if ($token !== null) {
-        $pdo = connectToDatabase();
+        $pdo = connectToTokenDatabase();
         $statement = $pdo->prepare('UPDATE tokens SET revoked = CURRENT_TIMESTAMP WHERE token_id = ? AND (revoked IS NULL OR revoked > CURRENT_TIMESTAMP)');
         $statement->execute([$token['token_id']]);
     }
@@ -106,7 +106,7 @@ function revokeToken(string $token): void
 
 function getTrustedEndpoints(): array
 {
-    $pdo = connectToDatabase();
+    $pdo = connectToTokenDatabase();
     $statement = $pdo->prepare('SELECT setting_value FROM settings WHERE setting_name = ?');
     $statement->execute(['endpoint']);
     $nextValue = $statement->fetchColumn();

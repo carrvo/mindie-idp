@@ -235,7 +235,7 @@ function user_verify($code, $redirect_uri, $client_id, $configs) {
     return false;
 }
 
-function get_response($code, $config)
+function get_response($code, $config) {
     $response = array('me' => $config['user_url']);
 
     $code_parts = explode(':', $code, 3);
