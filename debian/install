@@ -1,6 +1,6 @@
 selfauth/* /usr/src/mindie-idp/selfauth/
-selfauth.php /usr/src/mindie-idp/selfauth.php
+selfauth.php /usr/src/mindie-idp/
 mintoken/* /usr/src/mindie-idp/mintoken/
-mintoken.php /usr/src/mindie-idp/mintoken.php
-selftoken.php /usr/src/mindie-idp/selftoken.php
+mintoken.php /usr/src/mindie-idp/
+selftoken.php /usr/src/mindie-idp/
 sitewide-metadata.json.php /usr/src/mindie-idp/
